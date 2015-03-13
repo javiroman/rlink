@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# rlink_server Startup script for the rlink_server Server
+#
+# description: The Rlink Server is server part of rlink client.
+#
+# processname: rlink_server
+# config: $CAP_HOME/rlink_main_folder/rlink_server.cfg
+# pidfile: $CAP_HOME/rlink_main_folder/rlink_server.pid
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+home=${0%dbconnector.start}
+cd $home
+
+if [ -f dbconnector_env.sh  ]; then
+        . dbconnector_env.sh
+else
+	echo "ERROR: dbconnector_env.sh missing"
+	exit
+fi
+
+# Path to the apachectl script, server binary, and short-form for messages.
+prog=dbconnector.py
+pidfile=dbconnector.pid
+lockfile=.lock
+RETVAL=0
+
+start() {
+        echo -n $"Starting $prog: "
+        daemon --pidfile=${pidfile} ./$prog
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && touch ${lockfile}
+        return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	kill -15 $(cat ${pidfile})
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
+}
+
+reload() {
+    echo -n $"Reloading $prog: "
+    if ! $prog -t >&/dev/null; then
+        RETVAL=$?
+        echo $"not reloading due to configuration syntax error"
+        failure $"not reloading $prog due to configuration syntax error"
+    else
+        killproc -p ${pidfile} $prog -HUP
+        RETVAL=$?
+    fi
+    echo
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+        status $prog
+	RETVAL=$?
+	;;
+  restart)
+	stop
+	start
+	;;
+  condrestart)
+	if [ -f ${pidfile} ] ; then
+		stop
+		start
+	fi
+	;;
+  force-reload|reload)
+        reload
+	;;
+  *)
+	echo $"Usage: $prog {start|stop|restart|condrestart|reload|status|help}"
+	RETVAL=3
+esac
+
+exit $RETVAL

@@ -1,0 +1,39 @@
+#
+# Rlink housekeeping stuff
+#
+OBJS_RLINK = binary1.o \
+	     binary2.o  \
+	     binary3.o \
+	     binary4.o \
+
+EXES_RLINK = execfinal
+
+# 
+# Real remote Makefile stuff
+#
+ALL :  exefinal
+
+O=./obj
+E=./exes
+ERR=./err
+
+LIB=../../../usuariobase/caldev/lib/linux
+
+SYSLIBS =-lm -lcurses -lnsl -lc -L/usr/ucblib  
+
+LIBS= $(LIB)/libover.a\
+ $(LIB)/libcmetc.a\
+ $(LIB)/libsvcs.a\
+ $(LIB)/liblu.a\
+ $(LIB)/lib_sc.a\
+ $(LIB)/libsvr.a\
+ $(LIB)/libmps.a\
+ $(LIB)/libnc.a\
+ $(LIB)/libfvl.a\
+ $(LIB)/libinit.a\
+ $(LIB)/libsups.a\
+ $(LIBCTREE)\
+ $(LIB)/libhsfc.a
+
+capbalactickd: $(O)/capbalactickd.o $(O)/struteuro.o $(O)/sttrafich.o $(O)/balpuntos.o 
+	cc -o $(E)/capbalactickd $(O)/capbalactickd.o $(O)/sttrafich.o $(O)/struteuro.o  $(O)/balpuntos.o $(LIBS) $(SYSLIBS) 2>>$(ERR)/capbalactickd.err
